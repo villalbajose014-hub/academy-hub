@@ -1,9 +1,9 @@
 import {
-  BarChart3, Users, Trophy, Target, Link2, DollarSign, TrendingUp, Award, ArrowLeftRight, LogOut,
+  BarChart3, Users, Target, Link2, DollarSign, TrendingUp, Award, ArrowLeftRight, LogOut,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useAuth } from "@/lib/auth-context";
-import logoShort from "@/assets/logo-short.png";
+import logoFull from "@/assets/logo-full.png";
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
   SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarFooter, useSidebar,
@@ -32,15 +32,14 @@ export function AppSidebar() {
   return (
     <Sidebar collapsible="icon">
       <SidebarContent>
-        <div className="p-4 flex items-center gap-3">
-          <img src={logoShort} alt="VMT" className="h-8 w-8 object-contain flex-shrink-0" />
-          {!collapsed && (
-            <span className="text-sm font-bold text-primary truncate">VMT Academy</span>
-          )}
+        <div className="p-4 flex items-center gap-3 border-b border-border/50 mb-2">
+          <img src={logoFull} alt="VMT" className={`object-contain flex-shrink-0 transition-all ${collapsed ? "h-6 w-6" : "h-10"}`} />
         </div>
 
         <SidebarGroup>
-          <SidebarGroupLabel>{role === "mentor" ? "Mentor" : "Alumno"}</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-xs uppercase tracking-widest text-muted-foreground/60">
+            {role === "mentor" ? "Mentor" : "Alumno"}
+          </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {links.map((item) => (
@@ -49,8 +48,8 @@ export function AppSidebar() {
                     <NavLink
                       to={item.url}
                       end
-                      className="hover:bg-sidebar-accent/50"
-                      activeClassName="bg-sidebar-accent text-primary font-medium"
+                      className="hover:bg-sidebar-accent/50 transition-all"
+                      activeClassName="bg-primary/10 text-primary font-semibold border-l-2 border-primary"
                     >
                       <item.icon className="mr-2 h-4 w-4 flex-shrink-0" />
                       {!collapsed && <span>{item.title}</span>}
@@ -63,17 +62,25 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="p-3">
-        {!collapsed && (
-          <p className="text-xs text-muted-foreground mb-2 truncate">{userName}</p>
-        )}
-        <button
-          onClick={logout}
-          className="flex items-center gap-2 text-sm text-muted-foreground hover:text-destructive transition-colors w-full"
-        >
-          <LogOut className="h-4 w-4 flex-shrink-0" />
-          {!collapsed && <span>Salir</span>}
-        </button>
+      <SidebarFooter className="p-4 border-t border-border/50">
+        <div className="flex items-center gap-3">
+          <div className="h-8 w-8 rounded-full bg-primary/20 text-primary flex items-center justify-center text-xs font-bold flex-shrink-0">
+            {userName?.slice(0, 2).toUpperCase() || "U"}
+          </div>
+          {!collapsed && (
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-foreground truncate">{userName || "Usuario"}</p>
+              <p className="text-xs text-muted-foreground capitalize">{role}</p>
+            </div>
+          )}
+          <button
+            onClick={logout}
+            className="text-muted-foreground hover:text-destructive transition-colors flex-shrink-0"
+            title="Cerrar sesión"
+          >
+            <LogOut className="h-4 w-4" />
+          </button>
+        </div>
       </SidebarFooter>
     </Sidebar>
   );

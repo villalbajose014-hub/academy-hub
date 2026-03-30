@@ -1,4 +1,5 @@
 import { ReactNode } from "react";
+import { motion } from "framer-motion";
 
 interface StatCardProps {
   title: string;
@@ -9,13 +10,17 @@ interface StatCardProps {
 
 export default function StatCard({ title, value, subtitle, icon }: StatCardProps) {
   return (
-    <div className="glass-card p-5">
-      <div className="flex items-start justify-between mb-3">
-        <span className="text-sm text-muted-foreground">{title}</span>
-        {icon && <span className="text-primary">{icon}</span>}
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="glass-card p-6 hover:border-primary/20 transition-all group"
+    >
+      <div className="flex items-start justify-between mb-4">
+        <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">{title}</span>
+        {icon && <span className="text-primary/70 group-hover:text-primary transition-colors">{icon}</span>}
       </div>
       <p className="stat-value">{value}</p>
-      {subtitle && <p className="text-xs text-muted-foreground mt-1">{subtitle}</p>}
-    </div>
+      {subtitle && <p className="text-xs text-muted-foreground mt-2">{subtitle}</p>}
+    </motion.div>
   );
 }
