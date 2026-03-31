@@ -64,15 +64,17 @@ export function AppSidebar() {
 
       <SidebarFooter className="p-4 border-t border-border/20">
         <div className="flex items-center gap-3">
-          <div className="h-8 w-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center text-xs font-bold flex-shrink-0">
-            {userName?.slice(0, 2).toUpperCase() || "U"}
-          </div>
-          {!collapsed && (
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-foreground truncate">{userName || "Usuario"}</p>
-              <p className="text-[10px] text-muted-foreground/60 uppercase tracking-wider">{role}</p>
+          <NavLink to="/profile" className="flex items-center gap-3 flex-1 min-w-0 hover:opacity-80 transition-opacity">
+            <div className="h-8 w-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center text-xs font-bold flex-shrink-0">
+              {userName?.slice(0, 2).toUpperCase() || "U"}
             </div>
-          )}
+            {!collapsed && (
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-foreground truncate">{userName || "Usuario"}</p>
+                <p className="text-[10px] text-muted-foreground/60 uppercase tracking-wider">{role}</p>
+              </div>
+            )}
+          </NavLink>
           <button
             onClick={logout}
             className="text-muted-foreground/40 hover:text-destructive transition-colors flex-shrink-0 p-1"

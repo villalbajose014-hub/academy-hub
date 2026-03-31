@@ -1,11 +1,13 @@
-import { useRef } from "react";
-import { mockAchievements } from "@/lib/mock-data";
+import { useState, useEffect } from "react";
+import { mockAchievements as staticAchievements, Achievement } from "@/lib/mock-data";
 import { Button } from "@/components/ui/button";
-import { Download, Lock, Crosshair, Banknote, Flame, Zap, Crown, Gem } from "lucide-react";
+import { Download, Lock, Crosshair, Banknote, Flame, Zap, Crown, Gem, Loader2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import html2canvas from "html2canvas";
 import logoFull from "@/assets/logo-full.png";
 import { motion } from "framer-motion";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/lib/auth-context";
 
 const iconMap: Record<string, React.ReactNode> = {
   crosshair: <Crosshair className="h-8 w-8" />,
@@ -26,9 +28,78 @@ const iconMapLarge: Record<string, React.ReactNode> = {
 };
 
 export default function AchievementsPage() {
-  const unlockedCount = mockAchievements.filter((a) => a.unlocked).length;
+  const { user } = useAuth();
+  const [loading, setLoading] = useState(true);
+  const [achievements, setAchievements] = useState<Achievement[]>([]);
+  const [totalRevenue, setTotalRevenue] = useState(0);
 
-  const handleExport = async (achievement: typeof mockAchievements[0]) => {
+  useEffect(() => {
+    if (user) fetchAndSyncAchievements();
+  }, [user]);
+
+  const fetchAndSyncAchievements = async () => {
+    if (!user) return;
+    try {
+      // 1. Get total revenue
+      const { data: transData } = await supabase
+        .from("transactions")
+        .select("amount")
+        .eq("user_id", user.id)
+        .eq("type", "income");
+      
+      const total = transData?.reduce((s, t) => s + t.amount, 0) || 0;
+      setTotalRevenue(total);
+
+      // 2. Get already unlocked from DB
+      const { data: unlockedData } = await supabase
+        .from("user_achievements")
+        .select("*")
+        .eq("user_id", user.id);
+      
+      const unlockedIds = new Set(unlockedData?.map(u => u.achievement_id) || []);
+
+      // 3. Prepare list and auto-unlock logic
+      const syncList = await Promise.all(staticAchievements.map(async (a) => {
+        const isActuallyUnlocked = unlockedIds.has(a.id);
+        const shouldUnlockNow = !isActuallyUnlocked && total >= a.threshold;
+
+        if (shouldUnlockNow) {
+          // Persist the new unlock
+          const unlockedAt = new Date().toISOString();
+          await supabase.from("user_achievements").insert({
+            user_id: user.id,
+            achievement_id: a.id,
+            unlocked_at: unlockedAt
+          });
+          
+          toast({ 
+            title: "🏆 ¡Nuevo Logro!", 
+            description: `Has desbloqueado: ${a.title}`,
+            className: "bg-primary text-primary-foreground border-none"
+          });
+
+          return { ...a, unlocked: true, unlockedAt: unlockedAt.split('T')[0] };
+        }
+
+        const dbEntry = unlockedData?.find(u => u.achievement_id === a.id);
+        return { 
+          ...a, 
+          unlocked: isActuallyUnlocked, 
+          unlockedAt: dbEntry ? new Date(dbEntry.unlocked_at).toISOString().split('T')[0] : a.unlockedAt 
+        };
+      }));
+
+      setAchievements(syncList);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const unlockedCount = achievements.filter((a) => a.unlocked).length;
+
+  const handleExport = async (achievement: Achievement) => {
     const el = document.getElementById(`achievement-export-${achievement.id}`);
     if (!el) return;
     el.style.display = "flex";
@@ -44,15 +115,23 @@ export default function AchievementsPage() {
     }
   };
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-[60vh]">
+        <Loader2 className="h-8 w-8 animate-spin text-primary/40" />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-8">
       <div className="page-header">
-        <h1>Logros</h1>
-        <p>{unlockedCount} de {mockAchievements.length} desbloqueados</p>
+        <h1>MIS LOGROS</h1>
+        <p>{unlockedCount} de {achievements.length} desbloqueados — Total: ${totalRevenue.toLocaleString()}</p>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-        {mockAchievements.map((a, i) => (
+        {achievements.map((a, i) => (
           <motion.div
             key={a.id}
             initial={{ opacity: 0, y: 20 }}
@@ -78,9 +157,17 @@ export default function AchievementsPage() {
                 </Button>
               </div>
             ) : (
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <Lock className="h-3.5 w-3.5" />
-                <span>Meta: ${a.threshold.toLocaleString()}</span>
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <Lock className="h-3.5 w-3.5" />
+                  <span>Meta: ${a.threshold.toLocaleString()}</span>
+                </div>
+                <div className="w-full bg-secondary/50 rounded-full h-1.5 overflow-hidden">
+                  <div 
+                    className="bg-primary h-full transition-all duration-1000" 
+                    style={{ width: `${Math.min((totalRevenue / a.threshold) * 100, 100)}%` }}
+                  />
+                </div>
               </div>
             )}
           </motion.div>
@@ -88,7 +175,7 @@ export default function AchievementsPage() {
       </div>
 
       {/* Hidden export templates — 1080×1920 Instagram Story format */}
-      {mockAchievements.filter((a) => a.unlocked).map((a) => (
+      {achievements.filter((a) => a.unlocked).map((a) => (
         <div
           key={a.id}
           id={`achievement-export-${a.id}`}

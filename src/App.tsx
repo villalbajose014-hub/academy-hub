@@ -14,6 +14,7 @@ import ResourcesPage from "./pages/ResourcesPage";
 import IncomePage from "./pages/IncomePage";
 import AchievementsPage from "./pages/AchievementsPage";
 import ConverterPage from "./pages/ConverterPage";
+import ProfilePage from "./pages/ProfilePage";
 import NotFound from "./pages/NotFound";
 import { Loader2 } from "lucide-react";
 
@@ -50,6 +51,7 @@ function AppRoutes() {
             <Route path="/converter" element={<ConverterPage />} />
           </>
         )}
+        <Route path="/profile" element={<ProfilePage />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </DashboardLayout>

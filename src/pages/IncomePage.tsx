@@ -1,13 +1,15 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
-import { Plus, TrendingUp, TrendingDown, ArrowUpCircle, ArrowDownCircle } from "lucide-react";
+import { Plus, TrendingUp, TrendingDown, ArrowUpCircle, ArrowDownCircle, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/lib/auth-context";
 
 interface Entry {
-  id: number;
+  id: string;
   amount: number;
   description: string;
   type: "income" | "expense";
@@ -15,39 +17,88 @@ interface Entry {
 }
 
 export default function IncomePage() {
-  const [entries, setEntries] = useState<Entry[]>([
-    { id: 1, amount: 1500, description: "Tatuaje manga completa", type: "income", date: "2026-03-28" },
-    { id: 2, amount: 200, description: "Tintas y agujas", type: "expense", date: "2026-03-27" },
-    { id: 3, amount: 800, description: "Tatuaje lettering", type: "income", date: "2026-03-26" },
-  ]);
+  const { user } = useAuth();
+  const [entries, setEntries] = useState<Entry[]>([]);
   const [amount, setAmount] = useState("");
   const [description, setDescription] = useState("");
   const [type, setType] = useState<"income" | "expense">("income");
+  const [loading, setLoading] = useState(false);
+  const [fetching, setFetching] = useState(true);
 
-  const handleAdd = (e: React.FormEvent) => {
+  useEffect(() => {
+    fetchEntries();
+  }, [user]);
+
+  const fetchEntries = async () => {
+    if (!user) return;
+    try {
+      const { data, error } = await supabase
+        .from("transactions")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("date", { ascending: false });
+
+      if (error) throw error;
+      setEntries(data as Entry[]);
+    } catch (err: any) {
+      console.error(err);
+    } finally {
+      setFetching(false);
+    }
+  };
+
+  const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!amount || !description) return;
-    const newEntry: Entry = {
-      id: Date.now(),
-      amount: Number(amount),
-      description,
-      type,
-      date: new Date().toISOString().split("T")[0],
-    };
-    setEntries([newEntry, ...entries]);
-    setAmount("");
-    setDescription("");
-    toast({ title: type === "income" ? "Ingreso registrado" : "Gasto registrado", description: `$${amount} — ${description}` });
+    if (!user || !amount || !description) return;
+    setLoading(true);
+    
+    const numAmount = Number(amount);
+
+    try {
+      const { data, error } = await supabase
+        .from("transactions")
+        .insert({
+          user_id: user.id,
+          amount: numAmount,
+          description,
+          type,
+          date: new Date().toISOString(),
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      
+      setEntries([data as Entry, ...entries]);
+      setAmount("");
+      setDescription("");
+      toast({ 
+        title: type === "income" ? "Ingreso registrado" : "Gasto registrado", 
+        description: `$${numAmount} — ${description}` 
+      });
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const totalIncome = entries.filter((e) => e.type === "income").reduce((s, e) => s + e.amount, 0);
   const totalExpense = entries.filter((e) => e.type === "expense").reduce((s, e) => s + e.amount, 0);
 
+  if (fetching) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin text-primary/40" />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-8 max-w-2xl">
       <div className="page-header">
-        <h1>Registrar Ingreso</h1>
-        <p>Lleva el control de tus finanzas</p>
+        <h1>Registrar Movimiento</h1>
+        <p>Lleva el control real de tus finanzas</p>
       </div>
 
       <div className="grid grid-cols-2 gap-4">
@@ -95,25 +146,29 @@ export default function IncomePage() {
           <Label className="text-xs uppercase tracking-wider text-muted-foreground">Descripción</Label>
           <Input value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Ej: Tatuaje brazo completo" required className="h-12 bg-secondary/30 border-border/50" />
         </div>
-        <Button type="submit" className="w-full h-12 text-base font-semibold">
-          <Plus className="h-4 w-4 mr-2" /> Agregar
+        <Button type="submit" className="w-full h-12 text-base font-semibold" disabled={loading}>
+          {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Plus className="h-4 w-4 mr-2" /> Agregar</>}
         </Button>
       </motion.form>
 
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="glass-card p-6">
         <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-4">Historial</h2>
         <div className="space-y-1">
-          {entries.map((e) => (
-            <div key={e.id} className="flex items-center justify-between py-3 border-b border-border/30 last:border-0 hover:bg-secondary/10 transition-colors rounded-lg px-2 -mx-2">
-              <div>
-                <p className="text-sm font-medium text-foreground">{e.description}</p>
-                <p className="text-xs text-muted-foreground mt-0.5">{e.date}</p>
+          {entries.length === 0 ? (
+            <p className="text-center py-8 text-muted-foreground/40 text-sm">No hay movimientos registrados</p>
+          ) : (
+            entries.map((e) => (
+              <div key={e.id} className="flex items-center justify-between py-3 border-b border-border/30 last:border-0 hover:bg-secondary/10 transition-colors rounded-lg px-2 -mx-2">
+                <div>
+                  <p className="text-sm font-medium text-foreground">{e.description}</p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">{new Date(e.date).toLocaleDateString()}</p>
+                </div>
+                <span className={`font-mono font-semibold text-sm ${e.type === "income" ? "text-primary" : "text-destructive"}`}>
+                  {e.type === "income" ? "+" : "-"}${e.amount.toLocaleString()}
+                </span>
               </div>
-              <span className={`font-mono font-semibold text-sm ${e.type === "income" ? "text-primary" : "text-destructive"}`}>
-                {e.type === "income" ? "+" : "-"}${e.amount.toLocaleString()}
-              </span>
-            </div>
-          ))}
+            ))
+          )}
         </div>
       </motion.div>
     </div>

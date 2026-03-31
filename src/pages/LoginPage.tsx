@@ -8,7 +8,7 @@ import logoFull from "@/assets/logo-full.png";
 import { motion, AnimatePresence } from "framer-motion";
 import { Loader2, ArrowRight, UserPlus, LogIn, GraduationCap, Palette } from "lucide-react";
 
-type Mode = "login" | "register";
+type Mode = "login" | "register" | "reset";
 type RoleOption = "mentor" | "student";
 
 const floatingOrbs = [
@@ -40,6 +40,13 @@ export default function LoginPage() {
         });
         if (error) throw error;
         toast({ title: "Cuenta creada", description: "Ya puedes iniciar sesión" });
+        setMode("login");
+      } else if (mode === "reset") {
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: window.location.origin,
+        });
+        if (error) throw error;
+        toast({ title: "Enlace enviado", description: "Revisa tu correo para restablecer tu contraseña" });
         setMode("login");
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
@@ -132,23 +139,33 @@ export default function LoginPage() {
         </div>
 
         <div className="glass-card p-8 md:p-10 glow-primary">
-          {/* Toggle tabs */}
-          <div className="flex mb-8 bg-secondary/50 rounded-xl p-1">
-            {(["login", "register"] as Mode[]).map((m) => (
-              <button
-                key={m}
-                onClick={() => setMode(m)}
-                className={`flex-1 py-2.5 rounded-lg text-sm font-semibold transition-all flex items-center justify-center gap-2 ${
-                  mode === m
-                    ? "bg-primary text-primary-foreground shadow-lg"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                {m === "login" ? <LogIn className="h-4 w-4" /> : <UserPlus className="h-4 w-4" />}
-                {m === "login" ? "Iniciar Sesión" : "Registrarse"}
-              </button>
-            ))}
-          </div>
+          {/* Title for Reset mode */}
+          {mode === "reset" && (
+            <div className="mb-8 text-center">
+              <h2 className="text-xl font-bold text-foreground">Recuperar Acceso</h2>
+              <p className="text-sm text-muted-foreground mt-1">Te enviaremos un enlace de recuperación</p>
+            </div>
+          )}
+
+          {/* Toggle tabs (hidden in reset mode) */}
+          {mode !== "reset" && (
+            <div className="flex mb-8 bg-secondary/50 rounded-xl p-1">
+              {(["login", "register"] as Mode[]).map((m) => (
+                <button
+                  key={m}
+                  onClick={() => setMode(m)}
+                  className={`flex-1 py-2.5 rounded-lg text-sm font-semibold transition-all flex items-center justify-center gap-2 ${
+                    mode === m
+                      ? "bg-primary text-primary-foreground shadow-lg"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {m === "login" ? <LogIn className="h-4 w-4" /> : <UserPlus className="h-4 w-4" />}
+                  {m === "login" ? "Iniciar Sesión" : "Registrarse"}
+                </button>
+              ))}
+            </div>
+          )}
 
           <AnimatePresence mode="wait">
             <motion.form
@@ -185,18 +202,31 @@ export default function LoginPage() {
                 />
               </motion.div>
 
-              <motion.div className="space-y-2" custom={mode === "register" ? 2 : 1} variants={fieldVariants} initial="hidden" animate="visible">
-                <Label className="text-xs uppercase tracking-wider text-muted-foreground">Contraseña</Label>
-                <Input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  required
-                  minLength={6}
-                  className="h-12 bg-secondary/30 border-border/50 focus:border-primary"
-                />
-              </motion.div>
+              {(mode === "login" || mode === "register") && (
+                <motion.div className="space-y-2" custom={mode === "register" ? 2 : 1} variants={fieldVariants} initial="hidden" animate="visible">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-xs uppercase tracking-wider text-muted-foreground">Contraseña</Label>
+                    {mode === "login" && (
+                      <button
+                        type="button"
+                        onClick={() => setMode("reset")}
+                        className="text-xs text-primary hover:underline font-medium"
+                      >
+                        ¿Olvidaste tu contraseña?
+                      </button>
+                    )}
+                  </div>
+                  <Input
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••"
+                    required
+                    minLength={6}
+                    className="h-12 bg-secondary/30 border-border/50 focus:border-primary"
+                  />
+                </motion.div>
+              )}
 
               {mode === "register" && (
                 <motion.div className="space-y-3" custom={3} variants={fieldVariants} initial="hidden" animate="visible">
@@ -231,11 +261,20 @@ export default function LoginPage() {
                     <Loader2 className="h-5 w-5 animate-spin" />
                   ) : (
                     <>
-                      {mode === "login" ? "Ingresar" : "Crear Cuenta"}
+                      {mode === "login" ? "Ingresar" : mode === "register" ? "Crear Cuenta" : "Enviar Enlace"}
                       <ArrowRight className="h-4 w-4 ml-2" />
                     </>
                   )}
                 </Button>
+                {mode === "reset" && (
+                  <button
+                    type="button"
+                    onClick={() => setMode("login")}
+                    className="w-full mt-4 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    Volver al inicio de sesión
+                  </button>
+                )}
               </motion.div>
             </motion.form>
           </AnimatePresence>

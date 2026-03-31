@@ -44,6 +44,176 @@ export type Database = {
         }
         Relationships: []
       }
+      transactions: {
+        Row: {
+          id: string
+          user_id: string
+          amount: number
+          description: string
+          type: "income" | "expense"
+          date: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          amount: number
+          description: string
+          type: "income" | "expense"
+          date?: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          amount?: number
+          description?: string
+          type?: "income" | "expense"
+          date?: string
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transactions_user_id_fkey"
+            columns: ["user_id"]
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      user_achievements: {
+        Row: {
+          id: string
+          user_id: string
+          achievement_id: string
+          unlocked_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          achievement_id: string
+          unlocked_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          achievement_id?: string
+          unlocked_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_achievements_user_id_fkey"
+            columns: ["user_id"]
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      student_links: {
+        Row: {
+          id: string
+          user_id: string
+          title: string
+          url: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          title: string
+          url: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          title?: string
+          url?: string
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "student_links_user_id_fkey"
+            columns: ["user_id"]
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      challenges: {
+        Row: {
+          id: string
+          mentor_id: string
+          title: string
+          goal: number
+          current: number
+          deadline: string
+          active: boolean
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          mentor_id: string
+          title: string
+          goal: number
+          current?: number
+          deadline: string
+          active?: boolean
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          mentor_id?: string
+          title?: string
+          goal?: number
+          current?: number
+          deadline?: string
+          active?: boolean
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "challenges_mentor_id_fkey"
+            columns: ["mentor_id"]
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      resources: {
+        Row: {
+          id: string
+          mentor_id: string
+          title: string
+          content: string | null
+          url: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          mentor_id: string
+          title: string
+          content?: string | null
+          url?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          mentor_id?: string
+          title?: string
+          content?: string | null
+          url?: string | null
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "resources_mentor_id_fkey"
+            columns: ["mentor_id"]
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
     }
     Views: {
       [_ in never]: never
