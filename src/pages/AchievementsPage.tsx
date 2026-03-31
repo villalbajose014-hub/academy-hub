@@ -1,13 +1,31 @@
 import { useRef } from "react";
 import { mockAchievements } from "@/lib/mock-data";
 import { Button } from "@/components/ui/button";
-import { Share2 } from "lucide-react";
+import { Download, Lock, Crosshair, Banknote, Flame, Zap, Crown, Gem } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import html2canvas from "html2canvas";
 import logoFull from "@/assets/logo-full.png";
+import { motion } from "framer-motion";
+
+const iconMap: Record<string, React.ReactNode> = {
+  crosshair: <Crosshair className="h-8 w-8" />,
+  banknote: <Banknote className="h-8 w-8" />,
+  flame: <Flame className="h-8 w-8" />,
+  zap: <Zap className="h-8 w-8" />,
+  crown: <Crown className="h-8 w-8" />,
+  gem: <Gem className="h-8 w-8" />,
+};
+
+const iconMapLarge: Record<string, React.ReactNode> = {
+  crosshair: <Crosshair style={{ width: 80, height: 80, color: "#FFFF00" }} />,
+  banknote: <Banknote style={{ width: 80, height: 80, color: "#FFFF00" }} />,
+  flame: <Flame style={{ width: 80, height: 80, color: "#FFFF00" }} />,
+  zap: <Zap style={{ width: 80, height: 80, color: "#FFFF00" }} />,
+  crown: <Crown style={{ width: 80, height: 80, color: "#FFFF00" }} />,
+  gem: <Gem style={{ width: 80, height: 80, color: "#FFFF00" }} />,
+};
 
 export default function AchievementsPage() {
-  const exportRef = useRef<HTMLDivElement>(null);
   const unlockedCount = mockAchievements.filter((a) => a.unlocked).length;
 
   const handleExport = async (achievement: typeof mockAchievements[0]) => {
@@ -15,44 +33,61 @@ export default function AchievementsPage() {
     if (!el) return;
     el.style.display = "flex";
     try {
-      const canvas = await html2canvas(el, { backgroundColor: "#000000", scale: 2 });
+      const canvas = await html2canvas(el, { backgroundColor: "#000000", scale: 2, useCORS: true });
       const link = document.createElement("a");
       link.download = `logro-${achievement.title.replace(/\s/g, "-")}.png`;
       link.href = canvas.toDataURL("image/png");
       link.click();
-      toast({ title: "¡Imagen exportada!", description: "Lista para compartir en Instagram Stories" });
+      toast({ title: "Imagen exportada", description: "Lista para compartir en Instagram Stories" });
     } finally {
       el.style.display = "none";
     }
   };
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">Logros</h1>
-        <p className="text-muted-foreground text-sm">{unlockedCount}/{mockAchievements.length} desbloqueados</p>
+    <div className="space-y-8">
+      <div className="page-header">
+        <h1>Logros</h1>
+        <p>{unlockedCount} de {mockAchievements.length} desbloqueados</p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {mockAchievements.map((a) => (
-          <div key={a.id} className={`glass-card p-5 transition-all ${a.unlocked ? "glow-primary" : "opacity-40"}`}>
-            <div className="text-4xl mb-3">{a.icon}</div>
-            <h3 className="font-bold text-foreground">{a.title}</h3>
-            <p className="text-sm text-muted-foreground mb-3">{a.description}</p>
-            {a.unlocked && (
-              <>
-                <p className="text-xs text-primary mb-3">Desbloqueado: {a.unlockedAt}</p>
-                <Button size="sm" variant="outline" onClick={() => handleExport(a)}>
-                  <Share2 className="h-3 w-3 mr-1" /> Compartir
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        {mockAchievements.map((a, i) => (
+          <motion.div
+            key={a.id}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: i * 0.08, duration: 0.4 }}
+            className={`glass-card p-6 ${a.unlocked ? "glow-primary shimmer" : "opacity-40 grayscale"}`}
+          >
+            <div className={`mb-4 p-3 rounded-xl w-fit ${a.unlocked ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"}`}>
+              {iconMap[a.icon] || <Crosshair className="h-8 w-8" />}
+            </div>
+            <h3 className="font-bold text-foreground text-lg">{a.title}</h3>
+            <p className="text-sm text-muted-foreground mt-1 mb-4">{a.description}</p>
+            {a.unlocked ? (
+              <div className="space-y-3">
+                <p className="text-xs text-primary font-medium">Desbloqueado: {a.unlockedAt}</p>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => handleExport(a)}
+                  className="border-primary/30 text-primary hover:bg-primary/10 hover:text-primary"
+                >
+                  <Download className="h-3.5 w-3.5 mr-1.5" /> Exportar para Stories
                 </Button>
-              </>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <Lock className="h-3.5 w-3.5" />
+                <span>Meta: ${a.threshold.toLocaleString()}</span>
+              </div>
             )}
-            {!a.unlocked && <p className="text-xs text-muted-foreground">Meta: ${a.threshold.toLocaleString()}</p>}
-          </div>
+          </motion.div>
         ))}
       </div>
 
-      {/* Hidden export templates */}
+      {/* Hidden export templates — 1080×1920 Instagram Story format */}
       {mockAchievements.filter((a) => a.unlocked).map((a) => (
         <div
           key={a.id}
@@ -64,25 +99,105 @@ export default function AchievementsPage() {
             justifyContent: "center",
             width: 1080,
             height: 1920,
-            background: "linear-gradient(180deg, #000 0%, #111 100%)",
+            background: "linear-gradient(180deg, #000 0%, #0a0a0a 40%, #111 100%)",
             padding: 80,
             position: "fixed",
             left: -9999,
             top: 0,
           }}
         >
-          <img src={logoFull} alt="VMT" style={{ width: 400, marginBottom: 80 }} />
-          <div style={{ fontSize: 120, marginBottom: 40 }}>{a.icon}</div>
-          <h2 style={{ fontSize: 64, color: "#FFFF00", fontWeight: 700, textAlign: "center", marginBottom: 20, fontFamily: "Space Grotesk, sans-serif" }}>
+          {/* Top decorative line */}
+          <div style={{
+            width: 120,
+            height: 2,
+            background: "linear-gradient(90deg, transparent, #FFFF00, transparent)",
+            marginBottom: 60,
+          }} />
+
+          <img src={logoFull} alt="VMT" style={{ width: 360, marginBottom: 80 }} crossOrigin="anonymous" />
+
+          {/* Icon container */}
+          <div style={{
+            width: 160,
+            height: 160,
+            borderRadius: 32,
+            background: "linear-gradient(135deg, rgba(255,255,0,0.15), rgba(255,255,0,0.05))",
+            border: "1px solid rgba(255,255,0,0.3)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            marginBottom: 48,
+          }}>
+            {iconMapLarge[a.icon]}
+          </div>
+
+          <h2 style={{
+            fontSize: 56,
+            color: "#FFFF00",
+            fontWeight: 700,
+            textAlign: "center",
+            marginBottom: 16,
+            fontFamily: "Space Grotesk, sans-serif",
+            letterSpacing: "-1px",
+          }}>
             {a.title}
           </h2>
-          <p style={{ fontSize: 36, color: "#999", textAlign: "center", fontFamily: "Space Grotesk, sans-serif" }}>
+
+          <p style={{
+            fontSize: 32,
+            color: "#666",
+            textAlign: "center",
+            fontFamily: "Space Grotesk, sans-serif",
+            maxWidth: 700,
+            lineHeight: 1.4,
+          }}>
             {a.description}
           </p>
-          <div style={{ marginTop: 80, padding: "16px 48px", border: "2px solid #FFFF00", borderRadius: 12 }}>
-            <p style={{ fontSize: 28, color: "#FFFF00", fontFamily: "Space Grotesk, sans-serif" }}>
-              VENDE MAS TATTOO ACADEMY
-            </p>
+
+          {/* Separator */}
+          <div style={{
+            width: 60,
+            height: 2,
+            background: "#333",
+            margin: "60px 0",
+          }} />
+
+          {/* Date */}
+          <p style={{
+            fontSize: 24,
+            color: "#444",
+            fontFamily: "JetBrains Mono, monospace",
+            letterSpacing: "2px",
+            textTransform: "uppercase",
+          }}>
+            Logro desbloqueado
+          </p>
+
+          {/* Bottom brand bar */}
+          <div style={{
+            position: "absolute",
+            bottom: 80,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: 12,
+          }}>
+            <div style={{
+              padding: "14px 48px",
+              border: "1px solid rgba(255,255,0,0.25)",
+              borderRadius: 12,
+            }}>
+              <p style={{
+                fontSize: 22,
+                color: "#FFFF00",
+                fontFamily: "Space Grotesk, sans-serif",
+                fontWeight: 600,
+                letterSpacing: "3px",
+                textTransform: "uppercase",
+              }}>
+                Vende Mas Tattoo Academy
+              </p>
+            </div>
           </div>
         </div>
       ))}

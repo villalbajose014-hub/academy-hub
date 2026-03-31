@@ -63,12 +63,12 @@ export const mockStudentRevenue: RevenueEntry[] = [
 ];
 
 export const mockAchievements: Achievement[] = [
-  { id: "1", title: "Primer Ingreso", description: "Registra tu primer ingreso", icon: "🎯", unlocked: true, unlockedAt: "2025-11-15", threshold: 1 },
-  { id: "2", title: "$1,000 Club", description: "Alcanza $1,000 en un mes", icon: "💰", unlocked: true, unlockedAt: "2025-12-20", threshold: 1000 },
-  { id: "3", title: "$5,000 Club", description: "Alcanza $5,000 en un mes", icon: "🔥", unlocked: false, threshold: 5000 },
-  { id: "4", title: "Racha de 7 días", description: "Registra ingresos 7 días seguidos", icon: "⚡", unlocked: true, unlockedAt: "2026-01-10", threshold: 7 },
-  { id: "5", title: "$10,000 Elite", description: "Alcanza $10,000 en un mes", icon: "👑", unlocked: false, threshold: 10000 },
-  { id: "6", title: "Constancia 30", description: "30 días consecutivos registrando", icon: "💎", unlocked: false, threshold: 30 },
+  { id: "1", title: "Primer Ingreso", description: "Registra tu primer ingreso", icon: "crosshair", unlocked: true, unlockedAt: "2025-11-15", threshold: 1 },
+  { id: "2", title: "$1,000 Club", description: "Alcanza $1,000 en un mes", icon: "banknote", unlocked: true, unlockedAt: "2025-12-20", threshold: 1000 },
+  { id: "3", title: "$5,000 Club", description: "Alcanza $5,000 en un mes", icon: "flame", unlocked: false, threshold: 5000 },
+  { id: "4", title: "Racha de 7 días", description: "Registra ingresos 7 días seguidos", icon: "zap", unlocked: true, unlockedAt: "2026-01-10", threshold: 7 },
+  { id: "5", title: "$10,000 Elite", description: "Alcanza $10,000 en un mes", icon: "crown", unlocked: false, threshold: 10000 },
+  { id: "6", title: "Constancia 30", description: "30 días consecutivos registrando", icon: "gem", unlocked: false, threshold: 30 },
 ];
 
 export const mockChallenges: Challenge[] = [

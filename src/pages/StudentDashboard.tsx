@@ -18,7 +18,7 @@ export default function StudentDashboard() {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <StatCard title="Este Mes" value={`$${lastMonth.toLocaleString()}`} icon={<DollarSign className="h-5 w-5" />} />
         <StatCard title="Total Acumulado" value={`$${total.toLocaleString()}`} icon={<TrendingUp className="h-5 w-5" />} />
-        <StatCard title="Racha Actual" value="15 días" subtitle="¡Sigue así! 🔥" icon={<Flame className="h-5 w-5" />} />
+        <StatCard title="Racha Actual" value="15 días" subtitle="Mantené el ritmo" icon={<Flame className="h-5 w-5" />} />
       </div>
 
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="glass-card p-6">

@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
 import logoFull from "@/assets/logo-full.png";
 import { motion, AnimatePresence } from "framer-motion";
-import { Loader2, ArrowRight, UserPlus, LogIn } from "lucide-react";
+import { Loader2, ArrowRight, UserPlus, LogIn, GraduationCap, Palette } from "lucide-react";
 
 type Mode = "login" | "register";
 type RoleOption = "mentor" | "student";
@@ -33,7 +33,7 @@ export default function LoginPage() {
           },
         });
         if (error) throw error;
-        toast({ title: "¡Cuenta creada! 🎉", description: "Ya puedes iniciar sesión" });
+        toast({ title: "Cuenta creada", description: "Ya puedes iniciar sesión" });
         setMode("login");
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
@@ -48,8 +48,9 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4 relative overflow-hidden">
-      {/* Background accents */}
+      {/* Background effects */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] rounded-full opacity-[0.03]" style={{ background: "radial-gradient(circle, hsl(54, 100%, 50%) 0%, transparent 70%)" }} />
+      <div className="absolute bottom-0 right-0 w-[400px] h-[400px] rounded-full opacity-[0.02]" style={{ background: "radial-gradient(circle, hsl(54, 100%, 50%) 0%, transparent 70%)" }} />
 
       <motion.div
         initial={{ opacity: 0, y: 30 }}
@@ -71,7 +72,7 @@ export default function LoginPage() {
 
         <div className="glass-card p-8 md:p-10 glow-primary">
           {/* Toggle tabs */}
-          <div className="flex mb-8 bg-secondary rounded-xl p-1">
+          <div className="flex mb-8 bg-secondary/50 rounded-xl p-1">
             {(["login", "register"] as Mode[]).map((m) => (
               <button
                 key={m}
@@ -100,31 +101,31 @@ export default function LoginPage() {
             >
               {mode === "register" && (
                 <div className="space-y-2">
-                  <Label className="text-sm font-medium">Nombre completo</Label>
+                  <Label className="text-xs uppercase tracking-wider text-muted-foreground">Nombre completo</Label>
                   <Input
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder="Tu nombre"
                     required
-                    className="h-12 bg-secondary/50 border-border/50 focus:border-primary"
+                    className="h-12 bg-secondary/30 border-border/50 focus:border-primary"
                   />
                 </div>
               )}
 
               <div className="space-y-2">
-                <Label className="text-sm font-medium">Email</Label>
+                <Label className="text-xs uppercase tracking-wider text-muted-foreground">Email</Label>
                 <Input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="tu@email.com"
                   required
-                  className="h-12 bg-secondary/50 border-border/50 focus:border-primary"
+                  className="h-12 bg-secondary/30 border-border/50 focus:border-primary"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label className="text-sm font-medium">Contraseña</Label>
+                <Label className="text-xs uppercase tracking-wider text-muted-foreground">Contraseña</Label>
                 <Input
                   type="password"
                   value={password}
@@ -132,29 +133,30 @@ export default function LoginPage() {
                   placeholder="••••••••"
                   required
                   minLength={6}
-                  className="h-12 bg-secondary/50 border-border/50 focus:border-primary"
+                  className="h-12 bg-secondary/30 border-border/50 focus:border-primary"
                 />
               </div>
 
               {mode === "register" && (
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium">¿Cuál es tu rol?</Label>
+                <div className="space-y-3">
+                  <Label className="text-xs uppercase tracking-wider text-muted-foreground">Tu rol</Label>
                   <div className="grid grid-cols-2 gap-3">
                     {([
-                      { value: "student" as RoleOption, label: "🎨 Alumno", desc: "Registra y crece" },
-                      { value: "mentor" as RoleOption, label: "🎓 Mentor", desc: "Guía y analiza" },
+                      { value: "student" as RoleOption, label: "Alumno", desc: "Registra y crece", icon: Palette },
+                      { value: "mentor" as RoleOption, label: "Mentor", desc: "Guía y analiza", icon: GraduationCap },
                     ]).map((r) => (
                       <button
                         key={r.value}
                         type="button"
                         onClick={() => setSelectedRole(r.value)}
-                        className={`py-4 px-4 rounded-xl text-left transition-all border-2 ${
+                        className={`py-4 px-4 rounded-xl text-left transition-all border ${
                           selectedRole === r.value
-                            ? "bg-primary/10 border-primary"
-                            : "bg-secondary/30 border-border/30 hover:border-primary/30"
+                            ? "bg-primary/10 border-primary/30"
+                            : "bg-secondary/20 border-border/30 hover:border-border/60"
                         }`}
                       >
-                        <span className="text-lg">{r.label}</span>
+                        <r.icon className={`h-5 w-5 mb-2 ${selectedRole === r.value ? "text-primary" : "text-muted-foreground"}`} />
+                        <span className="text-sm font-semibold block">{r.label}</span>
                         <p className="text-xs text-muted-foreground mt-0.5">{r.desc}</p>
                       </button>
                     ))}
@@ -176,8 +178,8 @@ export default function LoginPage() {
           </AnimatePresence>
         </div>
 
-        <p className="text-center text-xs text-muted-foreground mt-6">
-          Vende Mas Tattoo © {new Date().getFullYear()} — Academia para Tatuadores
+        <p className="text-center text-xs text-muted-foreground/60 mt-8">
+          Vende Mas Tattoo &copy; {new Date().getFullYear()}
         </p>
       </motion.div>
     </div>

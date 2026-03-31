@@ -11,17 +11,17 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
       <div className="min-h-screen flex w-full">
         <AppSidebar />
         <div className="flex-1 flex flex-col min-w-0">
-          <header className="h-16 flex items-center justify-between border-b border-border/50 px-4 md:px-6 flex-shrink-0 backdrop-blur-sm bg-background/80">
+          <header className="h-14 flex items-center justify-between border-b border-border/30 px-4 md:px-6 flex-shrink-0 backdrop-blur-md bg-background/60">
             <div className="flex items-center gap-3">
               <SidebarTrigger />
               <div className="hidden sm:block">
-                <p className="text-sm font-semibold text-foreground">
+                <p className="text-xs font-semibold text-foreground uppercase tracking-wider">
                   {role === "mentor" ? "Command Center" : "Mi Panel"}
                 </p>
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <div className="h-8 w-8 rounded-full bg-primary/20 text-primary flex items-center justify-center text-xs font-bold">
+              <div className="h-8 w-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center text-xs font-bold">
                 {userName?.slice(0, 2).toUpperCase() || "U"}
               </div>
             </div>

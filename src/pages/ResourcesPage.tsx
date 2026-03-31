@@ -3,8 +3,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Plus, ExternalLink, Trash2 } from "lucide-react";
+import { Plus, ExternalLink, Trash2, FileText } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { motion } from "framer-motion";
 
 interface Resource {
   id: number;
@@ -29,7 +30,7 @@ export default function ResourcesPage() {
     setTitle("");
     setContent("");
     setUrl("");
-    toast({ title: "Recurso guardado 📌" });
+    toast({ title: "Recurso guardado" });
   };
 
   const handleDelete = (id: number) => {
@@ -37,44 +38,53 @@ export default function ResourcesPage() {
   };
 
   return (
-    <div className="space-y-6 max-w-2xl">
-      <div>
-        <h1 className="text-2xl font-bold">Recursos</h1>
-        <p className="text-muted-foreground text-sm">Notas rápidas y enlaces para tu equipo</p>
+    <div className="space-y-8 max-w-2xl">
+      <div className="page-header">
+        <h1>Recursos</h1>
+        <p>Notas rápidas y enlaces para tu equipo</p>
       </div>
 
-      <form onSubmit={handleAdd} className="glass-card p-5 space-y-4">
+      <motion.form initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} onSubmit={handleAdd} className="glass-card p-6 space-y-5">
         <div className="space-y-2">
-          <Label>Título</Label>
-          <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Nombre del recurso" required />
+          <Label className="text-xs uppercase tracking-wider text-muted-foreground">Título</Label>
+          <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Nombre del recurso" required className="h-11 bg-secondary/30 border-border/50" />
         </div>
         <div className="space-y-2">
-          <Label>Nota</Label>
-          <Textarea value={content} onChange={(e) => setContent(e.target.value)} placeholder="Descripción o notas..." rows={3} />
+          <Label className="text-xs uppercase tracking-wider text-muted-foreground">Nota</Label>
+          <Textarea value={content} onChange={(e) => setContent(e.target.value)} placeholder="Descripción o notas..." rows={3} className="bg-secondary/30 border-border/50" />
         </div>
         <div className="space-y-2">
-          <Label>Enlace (opcional)</Label>
-          <Input value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://..." />
+          <Label className="text-xs uppercase tracking-wider text-muted-foreground">Enlace (opcional)</Label>
+          <Input value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://..." className="h-11 bg-secondary/30 border-border/50" />
         </div>
-        <Button type="submit"><Plus className="h-4 w-4 mr-2" /> Guardar</Button>
-      </form>
+        <Button type="submit" className="h-11"><Plus className="h-4 w-4 mr-2" /> Guardar</Button>
+      </motion.form>
 
       <div className="space-y-3">
-        {resources.map((r) => (
-          <div key={r.id} className="glass-card p-4 flex items-start justify-between gap-4">
+        {resources.map((r, i) => (
+          <motion.div
+            key={r.id}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: i * 0.06 }}
+            className="glass-card p-5 flex items-start justify-between gap-4"
+          >
             <div className="min-w-0 flex-1">
-              <h3 className="font-semibold text-foreground text-sm">{r.title}</h3>
-              {r.content && <p className="text-sm text-muted-foreground mt-1">{r.content}</p>}
+              <div className="flex items-center gap-2 mb-1">
+                <FileText className="h-4 w-4 text-primary/60 flex-shrink-0" />
+                <h3 className="font-semibold text-foreground text-sm">{r.title}</h3>
+              </div>
+              {r.content && <p className="text-sm text-muted-foreground mt-1 ml-6">{r.content}</p>}
               {r.url && (
-                <a href={r.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-xs text-primary mt-2 hover:underline">
+                <a href={r.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-xs text-primary mt-2 ml-6 hover:underline">
                   <ExternalLink className="h-3 w-3" /> {r.url}
                 </a>
               )}
             </div>
-            <button onClick={() => handleDelete(r.id)} className="text-muted-foreground hover:text-destructive transition-colors flex-shrink-0">
+            <button onClick={() => handleDelete(r.id)} className="text-muted-foreground/40 hover:text-destructive transition-colors flex-shrink-0 p-1">
               <Trash2 className="h-4 w-4" />
             </button>
-          </div>
+          </motion.div>
         ))}
       </div>
     </div>
