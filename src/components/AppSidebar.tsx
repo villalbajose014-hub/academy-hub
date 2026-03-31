@@ -32,8 +32,8 @@ export function AppSidebar() {
   return (
     <Sidebar collapsible="icon">
       <SidebarContent>
-        <div className="p-5 flex items-center gap-3 border-b border-border/20 mb-2">
-          <img src={logoFull} alt="VMT" className={`object-contain flex-shrink-0 transition-all ${collapsed ? "h-6 w-6" : "h-12"}`} />
+        <div className="p-5 flex items-center justify-center gap-3 border-b border-border/20 mb-2 mt-4">
+          <img src={logoFull} alt="VMT" className={`object-contain flex-shrink-0 transition-all duration-300 ${collapsed ? "h-8 w-8" : "h-24 w-auto"}`} />
         </div>
 
         <SidebarGroup>

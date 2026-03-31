@@ -11,6 +11,12 @@ import { Loader2, ArrowRight, UserPlus, LogIn, GraduationCap, Palette } from "lu
 type Mode = "login" | "register";
 type RoleOption = "mentor" | "student";
 
+const floatingOrbs = [
+  { size: 700, top: "-10%", left: "50%", translateX: "-50%", delay: 0, duration: 8 },
+  { size: 400, top: "60%", left: "80%", translateX: "0", delay: 2, duration: 10 },
+  { size: 300, top: "20%", left: "-5%", translateX: "0", delay: 4, duration: 7 },
+];
+
 export default function LoginPage() {
   const [mode, setMode] = useState<Mode>("login");
   const [email, setEmail] = useState("");
@@ -46,28 +52,83 @@ export default function LoginPage() {
     }
   };
 
+  const fieldVariants = {
+    hidden: { opacity: 0, y: 16 },
+    visible: (i: number) => ({
+      opacity: 1,
+      y: 0,
+      transition: { delay: i * 0.08, duration: 0.35, ease: "easeOut" },
+    }),
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4 relative overflow-hidden">
-      {/* Background effects */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] rounded-full opacity-[0.03]" style={{ background: "radial-gradient(circle, hsl(54, 100%, 50%) 0%, transparent 70%)" }} />
-      <div className="absolute bottom-0 right-0 w-[400px] h-[400px] rounded-full opacity-[0.02]" style={{ background: "radial-gradient(circle, hsl(54, 100%, 50%) 0%, transparent 70%)" }} />
+      {/* Animated floating orbs */}
+      {floatingOrbs.map((orb, i) => (
+        <motion.div
+          key={i}
+          className="absolute rounded-full pointer-events-none"
+          style={{
+            width: orb.size,
+            height: orb.size,
+            top: orb.top,
+            left: orb.left,
+            translateX: orb.translateX,
+            background: "radial-gradient(circle, hsl(54, 100%, 50%) 0%, transparent 70%)",
+            opacity: 0.04,
+          }}
+          animate={{
+            y: [0, -24, 0],
+            scale: [1, 1.04, 1],
+          }}
+          transition={{
+            duration: orb.duration,
+            delay: orb.delay,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+        />
+      ))}
+
+      {/* Subtle grid texture */}
+      <div
+        className="absolute inset-0 pointer-events-none opacity-[0.015]"
+        style={{
+          backgroundImage:
+            "linear-gradient(hsl(54,100%,50%) 1px, transparent 1px), linear-gradient(90deg, hsl(54,100%,50%) 1px, transparent 1px)",
+          backgroundSize: "60px 60px",
+        }}
+      />
 
       <motion.div
-        initial={{ opacity: 0, y: 30 }}
+        initial={{ opacity: 0, y: 40 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, ease: "easeOut" }}
+        transition={{ duration: 0.7, ease: "easeOut" }}
         className="w-full max-w-lg relative z-10"
       >
-        {/* Logo */}
+        {/* Logo — significantly bigger */}
         <div className="flex justify-center mb-12">
-          <motion.img
-            src={logoFull}
-            alt="Vende Mas Tattoo"
-            className="h-24 md:h-28 object-contain"
-            initial={{ scale: 0.8, opacity: 0 }}
+          <motion.div
+            initial={{ scale: 0.6, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-          />
+            transition={{ duration: 0.6, delay: 0.15, ease: [0.34, 1.56, 0.64, 1] }}
+            className="relative"
+          >
+            {/* Glow halo behind logo */}
+            <motion.div
+              className="absolute inset-0 rounded-full blur-3xl"
+              style={{ background: "radial-gradient(circle, hsl(54,100%,50%) 0%, transparent 70%)", opacity: 0.15 }}
+              animate={{ scale: [1, 1.15, 1], opacity: [0.12, 0.22, 0.12] }}
+              transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+            />
+            <motion.img
+              src={logoFull}
+              alt="Vende Mas Tattoo"
+              className="h-44 md:h-56 object-contain relative z-10 drop-shadow-2xl"
+              animate={{ y: [0, -6, 0] }}
+              transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+            />
+          </motion.div>
         </div>
 
         <div className="glass-card p-8 md:p-10 glow-primary">
@@ -95,12 +156,12 @@ export default function LoginPage() {
               initial={{ opacity: 0, x: mode === "login" ? -20 : 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: mode === "login" ? 20 : -20 }}
-              transition={{ duration: 0.2 }}
+              transition={{ duration: 0.22 }}
               onSubmit={handleSubmit}
               className="space-y-5"
             >
               {mode === "register" && (
-                <div className="space-y-2">
+                <motion.div className="space-y-2" custom={0} variants={fieldVariants} initial="hidden" animate="visible">
                   <Label className="text-xs uppercase tracking-wider text-muted-foreground">Nombre completo</Label>
                   <Input
                     value={name}
@@ -109,10 +170,10 @@ export default function LoginPage() {
                     required
                     className="h-12 bg-secondary/30 border-border/50 focus:border-primary"
                   />
-                </div>
+                </motion.div>
               )}
 
-              <div className="space-y-2">
+              <motion.div className="space-y-2" custom={mode === "register" ? 1 : 0} variants={fieldVariants} initial="hidden" animate="visible">
                 <Label className="text-xs uppercase tracking-wider text-muted-foreground">Email</Label>
                 <Input
                   type="email"
@@ -122,9 +183,9 @@ export default function LoginPage() {
                   required
                   className="h-12 bg-secondary/30 border-border/50 focus:border-primary"
                 />
-              </div>
+              </motion.div>
 
-              <div className="space-y-2">
+              <motion.div className="space-y-2" custom={mode === "register" ? 2 : 1} variants={fieldVariants} initial="hidden" animate="visible">
                 <Label className="text-xs uppercase tracking-wider text-muted-foreground">Contraseña</Label>
                 <Input
                   type="password"
@@ -135,10 +196,10 @@ export default function LoginPage() {
                   minLength={6}
                   className="h-12 bg-secondary/30 border-border/50 focus:border-primary"
                 />
-              </div>
+              </motion.div>
 
               {mode === "register" && (
-                <div className="space-y-3">
+                <motion.div className="space-y-3" custom={3} variants={fieldVariants} initial="hidden" animate="visible">
                   <Label className="text-xs uppercase tracking-wider text-muted-foreground">Tu rol</Label>
                   <div className="grid grid-cols-2 gap-3">
                     {([
@@ -161,19 +222,21 @@ export default function LoginPage() {
                       </button>
                     ))}
                   </div>
-                </div>
+                </motion.div>
               )}
 
-              <Button type="submit" className="w-full h-12 text-base font-semibold" size="lg" disabled={loading}>
-                {loading ? (
-                  <Loader2 className="h-5 w-5 animate-spin" />
-                ) : (
-                  <>
-                    {mode === "login" ? "Ingresar" : "Crear Cuenta"}
-                    <ArrowRight className="h-4 w-4 ml-2" />
-                  </>
-                )}
-              </Button>
+              <motion.div custom={mode === "register" ? 4 : 2} variants={fieldVariants} initial="hidden" animate="visible">
+                <Button type="submit" className="w-full h-12 text-base font-semibold" size="lg" disabled={loading}>
+                  {loading ? (
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                  ) : (
+                    <>
+                      {mode === "login" ? "Ingresar" : "Crear Cuenta"}
+                      <ArrowRight className="h-4 w-4 ml-2" />
+                    </>
+                  )}
+                </Button>
+              </motion.div>
             </motion.form>
           </AnimatePresence>
         </div>

@@ -9,6 +9,7 @@ export interface Student {
   lastUpdate: string;
   needsAttention: boolean;
   streak: number;
+  links?: { title: string; url: string }[];
 }
 
 export interface RevenueEntry {
@@ -36,12 +37,12 @@ export interface Challenge {
 }
 
 export const mockStudents: Student[] = [
-  { id: "1", name: "Carlos Méndez", avatar: "CM", lastIncome: 2400, totalRevenue: 18500, lastUpdate: "2026-03-28", needsAttention: false, streak: 12 },
-  { id: "2", name: "Lucía Torres", avatar: "LT", lastIncome: 3100, totalRevenue: 24200, lastUpdate: "2026-03-29", needsAttention: false, streak: 8 },
-  { id: "3", name: "Andrés Ríos", avatar: "AR", lastIncome: 800, totalRevenue: 6300, lastUpdate: "2026-03-15", needsAttention: true, streak: 0 },
-  { id: "4", name: "Valentina Cruz", avatar: "VC", lastIncome: 4500, totalRevenue: 32100, lastUpdate: "2026-03-30", needsAttention: false, streak: 15 },
-  { id: "5", name: "Diego Paredes", avatar: "DP", lastIncome: 600, totalRevenue: 4100, lastUpdate: "2026-03-10", needsAttention: true, streak: 0 },
-  { id: "6", name: "Mariana Solís", avatar: "MS", lastIncome: 1900, totalRevenue: 14800, lastUpdate: "2026-03-27", needsAttention: false, streak: 5 },
+  { id: "1", name: "Carlos Méndez", avatar: "CM", lastIncome: 2400, totalRevenue: 18500, lastUpdate: "2026-03-28", needsAttention: false, streak: 12, links: [{ title: "Portfolio", url: "https://dribbble.com" }, { title: "Instagram", url: "https://instagram.com" }] },
+  { id: "2", name: "Lucía Torres", avatar: "LT", lastIncome: 3100, totalRevenue: 24200, lastUpdate: "2026-03-29", needsAttention: false, streak: 8, links: [{ title: "Drive Docs", url: "https://drive.google.com" }] },
+  { id: "3", name: "Andrés Ríos", avatar: "AR", lastIncome: 800, totalRevenue: 6300, lastUpdate: "2026-03-15", needsAttention: true, streak: 0, links: [] },
+  { id: "4", name: "Valentina Cruz", avatar: "VC", lastIncome: 4500, totalRevenue: 32100, lastUpdate: "2026-03-30", needsAttention: false, streak: 15, links: [{ title: "GitHub", url: "https://github.com" }, { title: "LinkedIn", url: "https://linkedin.com" }] },
+  { id: "5", name: "Diego Paredes", avatar: "DP", lastIncome: 600, totalRevenue: 4100, lastUpdate: "2026-03-10", needsAttention: true, streak: 0, links: [] },
+  { id: "6", name: "Mariana Solís", avatar: "MS", lastIncome: 1900, totalRevenue: 14800, lastUpdate: "2026-03-27", needsAttention: false, streak: 5, links: [{ title: "Behance", url: "https://behance.net" }] },
 ];
 
 export const mockMonthlyRevenue: RevenueEntry[] = [
