@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { mockAchievements as staticAchievements, Achievement } from "@/lib/mock-data";
 import { Button } from "@/components/ui/button";
 import { Download, Lock, Crosshair, Banknote, Flame, Zap, Crown, Gem, Loader2 } from "lucide-react";
@@ -33,28 +33,28 @@ export default function AchievementsPage() {
   const [achievements, setAchievements] = useState<Achievement[]>([]);
   const [totalRevenue, setTotalRevenue] = useState(0);
 
-  useEffect(() => {
-    if (user) fetchAndSyncAchievements();
-  }, [user]);
-
-  const fetchAndSyncAchievements = async () => {
+  const fetchAndSyncAchievements = useCallback(async () => {
     if (!user) return;
     try {
       // 1. Get total revenue
-      const { data: transData } = await supabase
+      const { data: transData, error: tError } = await supabase
         .from("transactions")
         .select("amount")
         .eq("user_id", user.id)
         .eq("type", "income");
       
+      if (tError) throw tError;
+      
       const total = transData?.reduce((s, t) => s + t.amount, 0) || 0;
       setTotalRevenue(total);
 
       // 2. Get already unlocked from DB
-      const { data: unlockedData } = await supabase
+      const { data: unlockedData, error: uError } = await supabase
         .from("user_achievements")
         .select("*")
         .eq("user_id", user.id);
+      
+      if (uError) throw uError;
       
       const unlockedIds = new Set(unlockedData?.map(u => u.achievement_id) || []);
 
@@ -66,11 +66,13 @@ export default function AchievementsPage() {
         if (shouldUnlockNow) {
           // Persist the new unlock
           const unlockedAt = new Date().toISOString();
-          await supabase.from("user_achievements").insert({
+          const { error: iError } = await supabase.from("user_achievements").insert({
             user_id: user.id,
             achievement_id: a.id,
             unlocked_at: unlockedAt
           });
+          
+          if (iError) throw iError;
           
           toast({ 
             title: "🏆 ¡Nuevo Logro!", 
@@ -91,11 +93,16 @@ export default function AchievementsPage() {
 
       setAchievements(syncList);
     } catch (err) {
-      console.error(err);
+      const msg = err instanceof Error ? err.message : "Error al sincronizar logros";
+      toast({ title: "Error", description: msg, variant: "destructive" });
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
+
+  useEffect(() => {
+    if (user) fetchAndSyncAchievements();
+  }, [user, fetchAndSyncAchievements]);
 
   const unlockedCount = achievements.filter((a) => a.unlocked).length;
 

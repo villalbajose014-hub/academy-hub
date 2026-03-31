@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -25,11 +25,7 @@ export default function IncomePage() {
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
 
-  useEffect(() => {
-    fetchEntries();
-  }, [user]);
-
-  const fetchEntries = async () => {
+  const fetchEntries = useCallback(async () => {
     if (!user) return;
     try {
       const { data, error } = await supabase
@@ -40,12 +36,16 @@ export default function IncomePage() {
 
       if (error) throw error;
       setEntries(data as Entry[]);
-    } catch (err: any) {
+    } catch (err) {
       console.error(err);
     } finally {
       setFetching(false);
     }
-  };
+  }, [user]);
+
+  useEffect(() => {
+    fetchEntries();
+  }, [fetchEntries]);
 
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -76,8 +76,9 @@ export default function IncomePage() {
         title: type === "income" ? "Ingreso registrado" : "Gasto registrado", 
         description: `$${numAmount} — ${description}` 
       });
-    } catch (err: any) {
-      toast({ title: "Error", description: err.message, variant: "destructive" });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Error";
+      toast({ title: "Error", description: msg, variant: "destructive" });
     } finally {
       setLoading(false);
     }

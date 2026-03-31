@@ -95,8 +95,9 @@ export default function ChallengesPage() {
       setDeadline("");
       fetchChallenges();
       toast({ title: "Desafío creado", description: "Tus alumnos ya pueden ver la nueva meta." });
-    } catch (err: any) {
-      toast({ title: "Error", description: err.message, variant: "destructive" });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Error";
+      toast({ title: "Error", description: msg, variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -108,8 +109,9 @@ export default function ChallengesPage() {
       if (error) throw error;
       setChallenges(challenges.filter(c => c.id !== id));
       toast({ title: "Desafío eliminado" });
-    } catch (err: any) {
-      toast({ title: "Error", description: err.message, variant: "destructive" });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Error";
+      toast({ title: "Error", description: msg, variant: "destructive" });
     }
   };
 

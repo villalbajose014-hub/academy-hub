@@ -1,7 +1,7 @@
 import { Search, Link2, Plus, ExternalLink, Trash2, X, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
@@ -59,8 +59,9 @@ function LinksDialog({
       setNewUrl("");
       onRefresh();
       toast({ title: "Enlace añadido" });
-    } catch (err: any) {
-      toast({ title: "Error", description: err.message, variant: "destructive" });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Error al actualizar";
+      toast({ title: "Error", description: msg, variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -76,8 +77,9 @@ function LinksDialog({
       if (error) throw error;
       onRefresh();
       toast({ title: "Enlace eliminado" });
-    } catch (err: any) {
-      toast({ title: "Error", description: err.message, variant: "destructive" });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Error";
+      toast({ title: "Error", description: msg, variant: "destructive" });
     }
   };
 
@@ -150,11 +152,7 @@ export default function StudentsPage() {
   const [activeStudentId, setActiveStudentId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchStudents();
-  }, []);
-
-  const fetchStudents = async () => {
+  const fetchStudents = useCallback(async () => {
     try {
       // 1. Fetch profiles
       const { data: profiles, error: pError } = await supabase
@@ -168,7 +166,7 @@ export default function StudentsPage() {
       const { data: transactions } = await supabase.from("transactions").select("*");
       const { data: links } = await supabase.from("student_links").select("*");
 
-      const studentsData = profiles.map((p) => {
+      const studentsData = (profiles || []).map((p) => {
         const userTrans = transactions?.filter(t => t.user_id === p.user_id) || [];
         const userLinks = links?.filter(l => l.user_id === p.user_id).map(l => ({ id: l.id, title: l.title, url: l.url })) || [];
         
@@ -198,12 +196,17 @@ export default function StudentsPage() {
       });
 
       setStudents(studentsData);
-    } catch (err: any) {
-      toast({ title: "Error", description: err.message, variant: "destructive" });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Error";
+      toast({ title: "Error", description: msg, variant: "destructive" });
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchStudents();
+  }, [fetchStudents]);
 
   const filtered = students.filter((s) =>
     s.name.toLowerCase().includes(search.toLowerCase())

@@ -69,21 +69,23 @@ export default function ResourcesPage() {
       setContent("");
       setUrl("");
       toast({ title: "Recurso guardado" });
-    } catch (err: any) {
-      toast({ title: "Error", description: err.message, variant: "destructive" });
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Error desconocido";
+      toast({ title: "Error", description: errorMessage, variant: "destructive" });
     } finally {
       setLoading(false);
     }
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (resourceId: string) => {
     try {
-      const { error } = await supabase.from("resources").delete().eq("id", id);
+      const { error } = await supabase.from("resources").delete().eq("id", resourceId);
       if (error) throw error;
-      setResources(resources.filter((r) => r.id !== id));
+      setResources(resources.filter((r) => r.id !== resourceId));
       toast({ title: "Recurso eliminado" });
-    } catch (err: any) {
-      toast({ title: "Error", description: err.message, variant: "destructive" });
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Error desconocido";
+      toast({ title: "Error", description: errorMessage, variant: "destructive" });
     }
   };
 
@@ -155,7 +157,7 @@ export default function ResourcesPage() {
                 )}
               </div>
               {role === "mentor" && (
-                <button onClick={() => handleDelete(id!)} className="text-muted-foreground/20 hover:text-destructive transition-colors flex-shrink-0 p-1 opacity-0 group-hover:opacity-100">
+                <button onClick={() => handleDelete(r.id)} className="text-muted-foreground/20 hover:text-destructive transition-colors flex-shrink-0 p-1 opacity-0 group-hover:opacity-100">
                   <Trash2 className="h-4 w-4" />
                 </button>
               )}

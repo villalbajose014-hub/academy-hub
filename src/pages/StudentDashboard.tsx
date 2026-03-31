@@ -1,35 +1,32 @@
-import { TrendingUp, DollarSign, Flame } from "lucide-react";
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
-import StatCard from "@/components/StatCard";
-import { mockStudentRevenue } from "@/lib/mock-data";
-import { motion } from "framer-motion";
-
+import { useState, useEffect, useCallback } from "react";
 import { TrendingUp, DollarSign, Flame, Loader2 } from "lucide-react";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import StatCard from "@/components/StatCard";
-import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { format, startOfMonth, subMonths, isWithinInterval } from "date-fns";
 import { es } from "date-fns/locale";
 
+interface ChartData {
+  month: string;
+  revenue: number;
+}
+
 export default function StudentDashboard() {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({ total: 0, currentMonth: 0, streak: 0 });
-  const [chartData, setChartData] = useState<any[]>([]);
+  const [chartData, setChartData] = useState<ChartData[]>([]);
 
-  useEffect(() => {
-    if (user) fetchDashboardData();
-  }, [user]);
-
-  const fetchDashboardData = async () => {
+  const fetchDashboardData = useCallback(async () => {
     try {
+      if (!user) return;
+
       const { data, error } = await supabase
         .from("transactions")
         .select("*")
-        .eq("user_id", user?.id)
+        .eq("user_id", user.id)
         .order("date", { ascending: true });
 
       if (error) throw error;
@@ -44,12 +41,10 @@ export default function StudentDashboard() {
         .filter(t => t.type === 'income' && new Date(t.date) >= monthStart)
         .reduce((s, t) => s + t.amount, 0);
 
-      // Simple pseudo-streak logic based on activity days
       const uniqueDays = new Set(transactions.map(t => new Date(t.date).toDateString())).size;
 
-      // Group by month for chart
       const months = Array.from({ length: 6 }, (_, i) => subMonths(now, 5 - i));
-      const monthlyData = months.map(m => {
+      const monthlyData: ChartData[] = months.map(m => {
         const mStart = startOfMonth(m);
         const mEnd = new Date(m.getFullYear(), m.getMonth() + 1, 0);
         const monthRev = transactions
@@ -69,7 +64,11 @@ export default function StudentDashboard() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
+
+  useEffect(() => {
+    fetchDashboardData();
+  }, [fetchDashboardData]);
 
   if (loading) {
     return (

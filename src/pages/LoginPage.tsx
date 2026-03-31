@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,9 +6,9 @@ import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
 import logoFull from "@/assets/logo-full.png";
 import { motion, AnimatePresence } from "framer-motion";
-import { Loader2, ArrowRight, UserPlus, LogIn, GraduationCap, Palette } from "lucide-react";
+import { Loader2, ArrowRight, UserPlus, LogIn, GraduationCap, Palette, KeyRound } from "lucide-react";
 
-type Mode = "login" | "register" | "reset";
+type Mode = "login" | "register" | "reset" | "update_password";
 type RoleOption = "mentor" | "student";
 
 const floatingOrbs = [
@@ -24,6 +24,17 @@ export default function LoginPage() {
   const [name, setName] = useState("");
   const [selectedRole, setSelectedRole] = useState<RoleOption>("student");
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    // Listen for password recovery event
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === "PASSWORD_RECOVERY") {
+        setMode("update_password");
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -48,12 +59,20 @@ export default function LoginPage() {
         if (error) throw error;
         toast({ title: "Enlace enviado", description: "Revisa tu correo para restablecer tu contraseña" });
         setMode("login");
+      } else if (mode === "update_password") {
+        const { error } = await supabase.auth.updateUser({
+          password: password,
+        });
+        if (error) throw error;
+        toast({ title: "Contraseña actualizada", description: "Ya puedes ingresar con tu nueva clave" });
+        setMode("login");
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
       }
-    } catch (err: any) {
-      toast({ title: "Error", description: err.message, variant: "destructive" });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Error";
+      toast({ title: "Error", description: msg, variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -130,7 +149,7 @@ export default function LoginPage() {
             />
             <motion.img
               src={logoFull}
-              alt="Vende Mas Tattoo"
+              alt="Academy Hub"
               className="h-44 md:h-56 object-contain relative z-10 drop-shadow-2xl"
               animate={{ y: [0, -6, 0] }}
               transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
@@ -139,16 +158,22 @@ export default function LoginPage() {
         </div>
 
         <div className="glass-card p-8 md:p-10 glow-primary">
-          {/* Title for Reset mode */}
-          {mode === "reset" && (
+          {/* Title for Reset/Update mode */}
+          {(mode === "reset" || mode === "update_password") && (
             <div className="mb-8 text-center">
-              <h2 className="text-xl font-bold text-foreground">Recuperar Acceso</h2>
-              <p className="text-sm text-muted-foreground mt-1">Te enviaremos un enlace de recuperación</p>
+              <h2 className="text-xl font-bold text-foreground">
+                {mode === "reset" ? "Recuperar Acceso" : "Nueva Contraseña"}
+              </h2>
+              <p className="text-sm text-muted-foreground mt-1">
+                {mode === "reset" 
+                  ? "Te enviaremos un enlace de recuperación" 
+                  : "Ingresa tu nueva clave para el sistema"}
+              </p>
             </div>
           )}
 
-          {/* Toggle tabs (hidden in reset mode) */}
-          {mode !== "reset" && (
+          {/* Toggle tabs (hidden in special modes) */}
+          {mode !== "reset" && mode !== "update_password" && (
             <div className="flex mb-8 bg-secondary/50 rounded-xl p-1">
               {(["login", "register"] as Mode[]).map((m) => (
                 <button
@@ -185,27 +210,31 @@ export default function LoginPage() {
                     onChange={(e) => setName(e.target.value)}
                     placeholder="Tu nombre"
                     required
-                    className="h-12 bg-secondary/30 border-border/50 focus:border-primary"
+                    className="h-12 bg-secondary/30 border-border/50 focus:border-primary px-4"
                   />
                 </motion.div>
               )}
 
-              <motion.div className="space-y-2" custom={mode === "register" ? 1 : 0} variants={fieldVariants} initial="hidden" animate="visible">
-                <Label className="text-xs uppercase tracking-wider text-muted-foreground">Email</Label>
-                <Input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="tu@email.com"
-                  required
-                  className="h-12 bg-secondary/30 border-border/50 focus:border-primary"
-                />
-              </motion.div>
+              {mode !== "update_password" && (
+                <motion.div className="space-y-2" custom={mode === "register" ? 1 : 0} variants={fieldVariants} initial="hidden" animate="visible">
+                  <Label className="text-xs uppercase tracking-wider text-muted-foreground">Email</Label>
+                  <Input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="tu@email.com"
+                    required
+                    className="h-12 bg-secondary/30 border-border/50 focus:border-primary px-4"
+                  />
+                </motion.div>
+              )}
 
-              {(mode === "login" || mode === "register") && (
+              {(mode === "login" || mode === "register" || mode === "update_password") && (
                 <motion.div className="space-y-2" custom={mode === "register" ? 2 : 1} variants={fieldVariants} initial="hidden" animate="visible">
                   <div className="flex items-center justify-between">
-                    <Label className="text-xs uppercase tracking-wider text-muted-foreground">Contraseña</Label>
+                    <Label className="text-xs uppercase tracking-wider text-muted-foreground">
+                      {mode === "update_password" ? "Nueva Contraseña" : "Contraseña"}
+                    </Label>
                     {mode === "login" && (
                       <button
                         type="button"
@@ -216,15 +245,20 @@ export default function LoginPage() {
                       </button>
                     )}
                   </div>
-                  <Input
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••"
-                    required
-                    minLength={6}
-                    className="h-12 bg-secondary/30 border-border/50 focus:border-primary"
-                  />
+                  <div className="relative">
+                    <Input
+                      type="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="••••••••"
+                      required
+                      minLength={6}
+                      className="h-12 bg-secondary/30 border-border/50 focus:border-primary px-4"
+                    />
+                    {mode === "update_password" && (
+                      <KeyRound className="absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground/30" />
+                    )}
+                  </div>
                 </motion.div>
               )}
 
@@ -261,12 +295,12 @@ export default function LoginPage() {
                     <Loader2 className="h-5 w-5 animate-spin" />
                   ) : (
                     <>
-                      {mode === "login" ? "Ingresar" : mode === "register" ? "Crear Cuenta" : "Enviar Enlace"}
+                      {mode === "login" ? "Ingresar" : mode === "register" ? "Crear Cuenta" : mode === "update_password" ? "Guardar Nueva Clave" : "Enviar Enlace"}
                       <ArrowRight className="h-4 w-4 ml-2" />
                     </>
                   )}
                 </Button>
-                {mode === "reset" && (
+                {(mode === "reset" || mode === "update_password") && (
                   <button
                     type="button"
                     onClick={() => setMode("login")}
@@ -281,9 +315,10 @@ export default function LoginPage() {
         </div>
 
         <p className="text-center text-xs text-muted-foreground/60 mt-8">
-          Vende Mas Tattoo &copy; {new Date().getFullYear()}
+          Academy Hub &copy; {new Date().getFullYear()}
         </p>
       </motion.div>
     </div>
   );
 }
+
