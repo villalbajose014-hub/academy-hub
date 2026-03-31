@@ -32,12 +32,12 @@ export function AppSidebar() {
   return (
     <Sidebar collapsible="icon">
       <SidebarContent>
-        <div className="p-4 flex items-center gap-3 border-b border-border/50 mb-2">
-          <img src={logoFull} alt="VMT" className={`object-contain flex-shrink-0 transition-all ${collapsed ? "h-6 w-6" : "h-10"}`} />
+        <div className="p-5 flex items-center gap-3 border-b border-border/20 mb-2">
+          <img src={logoFull} alt="VMT" className={`object-contain flex-shrink-0 transition-all ${collapsed ? "h-6 w-6" : "h-12"}`} />
         </div>
 
         <SidebarGroup>
-          <SidebarGroupLabel className="text-xs uppercase tracking-widest text-muted-foreground/60">
+          <SidebarGroupLabel className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground/40 font-medium">
             {role === "mentor" ? "Mentor" : "Alumno"}
           </SidebarGroupLabel>
           <SidebarGroupContent>
@@ -48,11 +48,11 @@ export function AppSidebar() {
                     <NavLink
                       to={item.url}
                       end
-                      className="hover:bg-sidebar-accent/50 transition-all"
+                      className="hover:bg-sidebar-accent/50 transition-all rounded-lg"
                       activeClassName="bg-primary/10 text-primary font-semibold border-l-2 border-primary"
                     >
                       <item.icon className="mr-2 h-4 w-4 flex-shrink-0" />
-                      {!collapsed && <span>{item.title}</span>}
+                      {!collapsed && <span className="text-sm">{item.title}</span>}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -62,20 +62,20 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="p-4 border-t border-border/50">
+      <SidebarFooter className="p-4 border-t border-border/20">
         <div className="flex items-center gap-3">
-          <div className="h-8 w-8 rounded-full bg-primary/20 text-primary flex items-center justify-center text-xs font-bold flex-shrink-0">
+          <div className="h-8 w-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center text-xs font-bold flex-shrink-0">
             {userName?.slice(0, 2).toUpperCase() || "U"}
           </div>
           {!collapsed && (
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-foreground truncate">{userName || "Usuario"}</p>
-              <p className="text-xs text-muted-foreground capitalize">{role}</p>
+              <p className="text-[10px] text-muted-foreground/60 uppercase tracking-wider">{role}</p>
             </div>
           )}
           <button
             onClick={logout}
-            className="text-muted-foreground hover:text-destructive transition-colors flex-shrink-0"
+            className="text-muted-foreground/40 hover:text-destructive transition-colors flex-shrink-0 p-1"
             title="Cerrar sesión"
           >
             <LogOut className="h-4 w-4" />
