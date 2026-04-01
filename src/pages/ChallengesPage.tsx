@@ -65,8 +65,9 @@ export default function ChallengesPage() {
       });
 
       setChallenges(syncedChallenges as Challenge[]);
-    } catch (err: any) {
-      toast({ title: "Error", description: err.message, variant: "destructive" });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Error al cargar desafíos";
+      toast({ title: "Error", description: msg, variant: "destructive" });
     } finally {
       setFetching(false);
     }
@@ -96,7 +97,7 @@ export default function ChallengesPage() {
       fetchChallenges();
       toast({ title: "Desafío creado", description: "Tus alumnos ya pueden ver la nueva meta." });
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Error";
+      const msg = err instanceof Error ? err.message : "Error al crear desafío";
       toast({ title: "Error", description: msg, variant: "destructive" });
     } finally {
       setLoading(false);
@@ -110,7 +111,7 @@ export default function ChallengesPage() {
       setChallenges(challenges.filter(c => c.id !== id));
       toast({ title: "Desafío eliminado" });
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Error";
+      const msg = err instanceof Error ? err.message : "Error al eliminar";
       toast({ title: "Error", description: msg, variant: "destructive" });
     }
   };

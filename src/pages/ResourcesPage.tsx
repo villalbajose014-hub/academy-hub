@@ -38,7 +38,7 @@ export default function ResourcesPage() {
 
       if (error) throw error;
       setResources(data as Resource[]);
-    } catch (err: any) {
+    } catch (err) {
       console.error(err);
     } finally {
       setFetching(false);
@@ -70,7 +70,7 @@ export default function ResourcesPage() {
       setUrl("");
       toast({ title: "Recurso guardado" });
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Error desconocido";
+      const errorMessage = err instanceof Error ? err.message : "Error al guardar recurso";
       toast({ title: "Error", description: errorMessage, variant: "destructive" });
     } finally {
       setLoading(false);
@@ -84,7 +84,7 @@ export default function ResourcesPage() {
       setResources(resources.filter((r) => r.id !== resourceId));
       toast({ title: "Recurso eliminado" });
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Error desconocido";
+      const errorMessage = err instanceof Error ? err.message : "Error al eliminar recurso";
       toast({ title: "Error", description: errorMessage, variant: "destructive" });
     }
   };

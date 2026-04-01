@@ -30,8 +30,9 @@ export default function ProfilePage() {
 
       if (error) throw error;
       toast({ title: "Perfil actualizado", description: "Tus cambios se han guardado correctamente" });
-    } catch (err: any) {
-      toast({ title: "Error", description: err.message, variant: "destructive" });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Error al actualizar perfil";
+      toast({ title: "Error", description: msg, variant: "destructive" });
     } finally {
       setLoading(false);
     }
